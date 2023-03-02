@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "chatgpt-backend"
+version = "0.1.0"
+description = ""
+authors = ["Pablo <ppmoya08@gmail.com>"]
+readme = "README.md"
+packages = [{include = "chatgpt_backend"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.92.0"
+uvicorn = "^0.20.0"
+openai = "^0.27.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
