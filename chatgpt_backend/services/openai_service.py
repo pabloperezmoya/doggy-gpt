@@ -15,9 +15,19 @@ def Openai_Completion(conversation):
         n=1
         
     )
-    # usage = resp.usage.total_tokens
     return resp.choices[0].message
 
+def Openai_CompletionStream(conversation):
+    respStream = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages= conversation,
+        max_tokens=200,
+        temperature=0.7,
+        n=1,
+        stream=True
+    )
+    return respStream
+# usage = resp.usage.total_tokens
 # conversation = []
 # while True:
 #     message = input("User: ")    

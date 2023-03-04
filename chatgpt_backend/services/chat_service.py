@@ -11,6 +11,14 @@ class ChatService(DatabaseService):
         # Create a new chat -> Create a document in the database with user_id and chat_title(optional)
         return self.add_document(collection='chats', document={'user_id': user_id, 'chat_title': chat_title})
     
+    def get_chats(self, user_id):
+        # Get the chats from the database
+        return self.get_documents(collection='chats', document={'user_id': user_id})
+    
+    def get_chat(self, chat_id):
+        # Get the chat from the database
+        return self.get_document(collection='chats', document={'_id': ObjectId(chat_id)})
+
     def update_chat_title(self, chat_id, chat_title):
         # Update the chat_title of the chat
         return self.update_document(collection='chats', document={'_id': ObjectId(chat_id)}, extra={'$set' : {'chat_title': chat_title}})
