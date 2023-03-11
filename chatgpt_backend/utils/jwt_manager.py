@@ -25,7 +25,7 @@ def decrypt_payload(encrypted_payload: bytes) -> dict:
     return decrypted_payload_str
 
 def generate_token(user_id) -> str:
-    dt = datetime.utcnow() + timedelta(minutes=60)
+    dt = datetime.utcnow() + timedelta(hours=72)
     encrypted_payload = {
         "user_id": str(encrypt_payload(user_id)),
         "exp": dt
