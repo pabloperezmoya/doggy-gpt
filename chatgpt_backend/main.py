@@ -9,7 +9,7 @@ app.include_router(chat.router)
 app.include_router(user.router)
 
 origins = [
-    "https://doggy-gpt-frontend.vercel.app"
+    "*"
 ]
 app.add_middleware(
     TrustedHostMiddleware, allowed_hosts=["https://doggy-gpt-frontend.vercel.app"] 
