@@ -10,19 +10,19 @@ from services.openai_service import Openai_Completion, OpenAI_StreamCompletion
 from sse_starlette.sse import EventSourceResponse
 
 router = APIRouter(
-    prefix="/chat",
-    tags=["chat"],
+    prefix='/chat',
+    tags=['chat'],
 )
 
 
-@router.get("/get_conversations/{chat_id}")
+@router.get('/get_conversations/{chat_id}')
 async def get_conversations(chat_id: str = Path(...)):
 
     # Get the conversation from the database
     # conversation: List[Dict] = DatabaseService.get_conversation(chat_id).content
     service = ChatService()
 
-    if (chat_id == "null"):
+    if (chat_id == 'null'):
         return []
     
     conversation_document_cursor = service.get_conversations(chat_id)
@@ -35,10 +35,10 @@ async def get_conversations(chat_id: str = Path(...)):
             yield json.dumps(document).encode('utf-8')
 
     # Devolver el resultado como un StreamingResponse
-    return StreamingResponse(json_generator(), media_type="application/json")
+    return StreamingResponse(json_generator(), media_type='application/json')
 
 
-@router.get("/completion/{chat_id}/{content}")
+@router.get('/completion/{chat_id}/{content}')
 async def create_message_completion(background_tasks: BackgroundTasks, chat_id: str = Path(...), content: str = Path(...)):
     service = ChatService()
 
@@ -64,29 +64,29 @@ async def create_message_completion(background_tasks: BackgroundTasks, chat_id: 
     # Send the conversation to the OpenAI service -> Returns a Stream
     import openai
     def error_response(info):
-        yield {"event": "error", "data": info}
+        yield {'event': 'error', 'data': info}
 
     try:
         response = OpenAI_StreamCompletion(conversations)
     except openai.error.InvalidRequestError:
-        return EventSourceResponse(error_response("Max tokens exceeded"))
+        return EventSourceResponse(error_response('Max tokens exceeded'))
 
     content_raw: list = []
 
     async def iter_response(response):
-        yield {"event": "start", "data": ""}
+        yield {'event': 'start', 'data': ''}
         for r in response:
             try:
                 text = r.choices[0].delta.content
                 content_raw.append(text)
-                yield {"event": "message", "data": text}
+                yield {'event': 'message', 'data': text}
             except AttributeError:
                 pass
-        yield {"event": "end", "data": ""}
+        yield {'event': 'end', 'data': ''}
         # ADDING HERE BECAUSE ITS THE LAST FUNCTION EXECUTED AND WHERE THE CONVERSATION IS COMPLETE
         # Saving the conversation to the database
 
-        content_clean = "".join(content_raw)
+        content_clean = ''.join(content_raw)
 
         assistant_response = {'role': 'assistant', 'content': content_clean}
         # Adding to conversations list
@@ -102,27 +102,28 @@ async def create_message_completion(background_tasks: BackgroundTasks, chat_id: 
             background_tasks.add_task(generate_title, conversations, chat_id)
 
     # Devolver el resultado como un StreamingResponse
-    # return StreamingResponse(json_generator(), media_type="application/json")
+    # return StreamingResponse(json_generator(), media_type='application/json')
 
     return EventSourceResponse(iter_response(response))
 
 
 def generate_title(conversations, chat_id):
     conversations.append(
-        {'role': 'user', 'content': 'Genera un titulo para esta conversación, no puede tener más de 50 caracters'})
+        {'role': 'user', 'content': 'Genera un titulo para esta conversación, no puede tener más de 50 caracters. Y además incluye un emoji (que tenga coherencia con el titulo) al final.'})
     resp = dict(Openai_Completion(conversations))
     service = ChatService()
     resp['content'] = resp['content'].replace('\n', '')
     resp['content'] = resp['content'].replace('\'', '')
+    resp['content'] = resp['content'].replace('\"', '')
     service.update_chat_title(chat_id, resp['content'])
 
 
 class ChatCreate(BaseModel):
     user_id: str
-    chat_title: str = "Nuevo Chat"
+    chat_title: str = 'Nuevo Chat'
 
 
-@router.post("/create_chat")
+@router.post('/create_chat')
 async def create_chat(chat_create: ChatCreate = Body()):
     # Create a new chat -> Create a document in the database with user_id and chat_title(optional)
     # Return the _id of the document (as chat_id)
@@ -132,12 +133,12 @@ async def create_chat(chat_create: ChatCreate = Body()):
     try:
         chat_id = str(service.create_chat(user_id, chat_title).inserted_id)
     except:
-        return "Error"
+        return 'Error'
 
-    return {"chat_id": chat_id}
+    return {'chat_id': chat_id}
 
 
-@router.get("/get_chats/{user_id}")
+@router.get('/get_chats/{user_id}')
 async def get_chat(user_id: str = Path(...)):
     # Get the chat from the database
     # chat: List[Dict] = DatabaseService.get_chat(user_id).content
@@ -152,3 +153,14 @@ async def get_chat(user_id: str = Path(...)):
         chat_list.append(document)
 
     return list(reversed(chat_list))
+
+
+@router.delete('/delete_chat/{chat_id}')
+async def delete_chat(chat_id: str = Path(...)):
+    # Delete the chat from the database
+    # DatabaseService.delete_chat(chat_id)
+    service = ChatService()
+    if (chat_id == 'null'):
+        return {'error': 'Chat id is null'}
+    service.delete_chat(chat_id)
+    return {'info':'Chat deleted'}

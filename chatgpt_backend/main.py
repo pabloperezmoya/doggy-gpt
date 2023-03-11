@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.gzip import GZipMiddleware
 
 from routes import chat
+from routes import user
 
 app = FastAPI()
 app.include_router(chat.router)
+app.include_router(user.router)
 
 origins = [
     "*"
