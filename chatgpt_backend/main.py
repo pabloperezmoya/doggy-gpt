@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from routes import chat
 from routes import user
 
@@ -11,9 +10,7 @@ app.include_router(user.router)
 origins = [
     "*"
 ]
-app.add_middleware(
-    TrustedHostMiddleware, allowed_hosts=["doggy-gpt-frontend.vercel.app"] 
-)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
