@@ -12,7 +12,7 @@ origins = [
     "*"
 ]
 app.add_middleware(
-    TrustedHostMiddleware, allowed_hosts=["https://doggy-gpt-frontend.vercel.app"] 
+    TrustedHostMiddleware, allowed_hosts=["doggy-gpt-frontend.vercel.app"] 
 )
 app.add_middleware(
     CORSMiddleware,
